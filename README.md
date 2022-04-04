@@ -25,7 +25,9 @@ There are the things that I created with the inputs. This includes in the data f
 
 •	The Rmd file with all the code used to produce visuals
 
-3.	Scripts: Contains the R-Script with code that was used to clean the raw data. To obtain data from Open Data Toronto Portal, visit https://open.toronto.ca/ , search for “Neighbourhood Crime Rates” and download data or download data from link https://open.toronto.ca/dataset/neighbourhood-crime-rates/. I obtained the 2014 General Social Survey - Canadians' Safety (Victimization) microdata on data portal odesi, which is not directly obtainable for public use but can visit https://www150.statcan.gc.ca/n1/en/catalogue/12M0026X for public use microdata file (PUMF – provincial) for the 2014 General Social Survey (GSS) on Canadians’ Safety (Victimization). 
+3.	Scripts
+	
+Contains the R-Script with code that was used to clean the raw data. To obtain data from Open Data Toronto Portal, visit https://open.toronto.ca/ , search for “Neighbourhood Crime Rates” and download data or download data from link https://open.toronto.ca/dataset/neighbourhood-crime-rates/. I obtained the 2014 General Social Survey - Canadians' Safety (Victimization) microdata on data portal odesi, which is not directly obtainable for public use but can visit https://www150.statcan.gc.ca/n1/en/catalogue/12M0026X for public use microdata file (PUMF – provincial) for the 2014 General Social Survey (GSS) on Canadians’ Safety (Victimization). 
 
 4.	License for re usability.
 
