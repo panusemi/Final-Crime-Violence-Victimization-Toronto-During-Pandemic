@@ -1,0 +1,434 @@
+---
+title: "Overall Decreasing Crime Rates in Toronto Does Not Reflect the Increase in Gun Violence, Hate Crimes and Racial Injustices and Safety Satisfaction during the Pandemic"
+author: 
+  - Emily Panus
+thanks: "Code and data are available at: https://github.com/panusemi/Final-Toronto-Crime-Pandemic.git."
+date: "`r format(Sys.time(), '%d %B %Y')`"
+abstract: "Neighbourhood crime occurring in cities are useful to study as it can concentrate their policies, initiatives, and allocation of police and resources and overall produce a safer environment for citizens. The crime dataset from Open Data Toronto and the General Social Survey of Victimization are used to analyze neighbourhoods that were most affected by crime, how crime rates have changed over the years of 2014-2020 and better understand how Canadians perceive crime, the justice system and on their experiences of victimization. While the number of reported crimes in Toronto have been slowly increasing between the years 2014-2019 with certain neighbourhoods experience higher crime rates, there is a noticeable decrease in most volume of crime od assults, homicide and shootngs in the early months of the COVID-19 pandemic in 2020 compared to previous years with majority of Canadians being satisfied with their personal safety from crime. However, problems including the increase in thefts and hate crimes as well as the under-reporting of certain types of crimes and racial biases causing inaccuracies and biases in results."
+keywords: "Crime, Assault, Theft, Shootings, Homicide, Victimization, Neighbourhoods, Police, Safety, Discrimination"
+output:
+  bookdown::pdf_document2
+toc: FALSE
+bibliography: references.bib
+---
+
+\tableofcontents
+
+\listoffigures 
+
+# Introduction
+
+Crime is an action of offense that may be prosecuted by the state and is punishable by law and includes the illegal activity of assault, auto theft, break and enter, robbery, homicide and shooting and firearm discharges. Overall, crime rate is the number of crimes done per 100,000 people is calculated by dividing the total number of reported crimes of any kind by the total population, then multiplying the result by 100,000. It is important to monitor crime rates monitors the severity level of police-reported crime in a city and nation to effectively prevent violence and dangerous environments in high crime geographic areas and concentrate policies, funding and proper allocation of police and resources to enhance the quality of life of all citizens. Crime rates are influenced by many factors varying from country to country that include high poverty levels, unemployment, low levels of education are only a few reason crime rates may increase while factors like strict police enforcement and severe sentences may reduce crime rates. 
+
+Canada is a nation known to be one of the safest and peaceful places to live in. In fact, in the 2021 Global Peace Index, Canada ranked in the top 10 most peaceful countries with an overall Global Peace Index (GPI) score of 1.33 (@citeGPI). The GPI quantifies global peacefulness in many nations on a scale of 1 to 5 (5 representing high degree of violence in country) and use it to see and understand the factors that create peace in a society. However, this does not mean that there the nation as a whole is safe and experience low violence.  Many large Metropolitan cities experience high crime. Toronto as Canada’s most populated city experiences higher levels of crime compared to the low levels of the whole country. Studied in this paper is the crime in Toronto and the overall increasing trend the past decade despite the fact that crime rate has decreased about 30% in Canada over the past 20 years (@citecanadacrime), however, the increasing trends of overall crime was distributed in 2020 due to the COVID-19 pandemic. Despite the strict gun laws, there is still much gun violence occurring in Toronto, which also decreased in 2020. However, the pandemic have cause an increase in many more thefts as well as an increase in violent and non-violent hate crimes (@citehatecrime), as will be demonstated in this paper. 
+
+
+In this paper, we use R (@citeR) to analyze a dataset from opendatatoronto (@citeopendatatoronto) and the General Social Survey – Victimization on neighbourhood crimes of assault, auto theft, break and enter, robbery, homicide and shooting and firearm discharges in Toronto in order to understand the changes of each crime each year as well as monitoring and examining trends in the population’s attitudes and behaviours on violence, crime, and safety in their neighbourhoods to see the structure and functioning of economy based on the views of many different groups of people. Public opinion and satisfaction are an important role when creating a better quality of life for citizens with public policies. The findings using this data presents some implications to them that result in some bias in the results. As previously mentioned, there have been an increase in hate crimes during the COVID-19 pandemic. There is a lot of systematic racial bias when it comes to crime where minorities, particularly people of colour, are overrepresented and are nine times more likely to be stopped and searched by police than white people (@citeracialbias). Careful examination and taking in account for such inequalities must be insured to avoid further injustices and prejudices against people of colour. 
+
+# Data
+
+```{r, include=FALSE}
+library(readr)
+library(dplyr)
+library(ggpubr)
+library(tidyverse)
+library(sf)
+library(knitr)
+```
+
+In this report, the data regarding the crime rates in Toronto neighbourhoods is obtained from Neighbourhood Crime Rates, Major Crime Indicators and Police Annual Statistical Report - Miscellaneous Data from the Open Data Toronto portal (@citeopendatatoronto). The dataset of Crime Data by Neighbourhood details counts and rates per 100,000 population for Assault, Auto Theft, Break and Enter, Robbery, Theft Over, Homicide and Shooting provided by Environics Analytics. The Major Crime Indicators (MCI) dataset is reported by occurrence date from 2014 to 2020 reported by the Toronto Police Service, including the occurrences where location was not given or verified. The Major Crime Indicators categories are Assault, Break and Enter, Auto Theft, Robbery and Theft Over collected in 140 neighbourhoods of Toronto. This data is provided at the offence is associated with the category and the geography of the crime. However, there are slight limitations to this dataset as there is an offset of occurrence location, the numbers by Division and Neighbourhood may not reflect the exact count of occurrences reported within these Toronto neighbourhoods. The Toronto’s Police Service Annual Statistical Report (ASR) details police related statistics including reported crimes, victims of crime, search of persons, firearms, traffic collisions, personnel, budget, communications, public complaints, regulated interactions, and other administrative information but in this paper want to focus on the Hate Crimes provided by Intelligence Services that details the count of Hate Crimes per year from 2014 to 2019. 
+
+The reported crime rate and neighbourhood datasets used was obtained in csv format from the City of Toronto Open Data Portal using the R package `opendatatoronto` (@citeopendatatoronto) and was last updated 2020. The data collected by the city of Toronto alluding to the crime rates and location of the crime and summarizes the details and rates of the communities in Toronto from 2014 to 2020, which is telling to the changes occurring to crime rates and counts due to the COVID-19 pandemic. Using `R` (@citeR), `tidyverse` (@citetidyverse), `tidyr` (@citetidyr), `dplyr` (@citedplyr), `readr` (@citereadr), `ggpubr` (@citeggpubr), `sf` (@citesf), and `knitr` (@citeknitr). I cleaned and extracted the necessary data to start my exploratory analysis.
+
+The General Social Survey (GSS) assess the opinions of the population of Canada by sampling citizens 15 years or older live in noninstitutional housing at the time of interviewing from all the provinces and territories.  The GSS is used to gather data on social trends in order to monitor changes in the living conditions and well being of Canadians over time and to analyze and collect information on specific social policy issues in which we will be focusing on the GSS on Canadian Safety and Victimization. This survey collects information on the nature and extent of criminal victimization in Canada. The main objective of the GSS on Canadians' Safety (Victimization) is to better understand how Canadians perceive crime and the justice system. It also allows collection of information on their experiences of victimization. The 2014 GSS was a survey conducted by collecting data of all respondents interviewed by telephone and/or face-to-face. This is a sample survey with a cross-sectional design conducted by Statistics Canada that use a probability (random) sample to ensure that its results are unbiased. The 2014 Victimization GSS. The number of respondents was 33,127 resulting in a 52.9% response rate. The Victimization GSS is conducted every 5 years with previous cycles were conducted in 1988, 1993, 1999, 2004, and 2009, with no current GSS released in 2019. The GSS contains a standard core of demographic, behavioral, and attitudinal questions, plus topics of special interest that have been keeping similar topics and sampling approach, especially relating to Abuse, Alcohol, Assault, Crime, Discrimination, Help, Injuries, Institution, Neighbours, Police and Safety. 
+
+\newpage
+
+```{r, include=FALSE }
+crime_indicator_data <- read.csv("C:/Users/Emily's Laptop/Desktop/sta304-final/Final-Crime-Violence-Victimization-Toronto-During-Pandemic/inputs/crime_indicator_data.csv")
+```
+
+
+```{r, include=FALSE}
+crime_rates_data <- read.csv("C:/Users/Emily's Laptop/Desktop/sta304-final/Final-Crime-Violence-Victimization-Toronto-During-Pandemic/inputs/crime_rates_data.csv") 
+
+```
+
+```{r, include=FALSE}
+hate_crime_data <-  read.csv("C:/Users/Emily's Laptop/Desktop/sta304-final/Final-Crime-Violence-Victimization-Toronto-During-Pandemic/inputs/hate_crime_data.csv")
+
+```
+
+```{r, include=FALSE}
+assult_rate <- crime_rates_data %>% select(c(14:20)) %>% 
+  summarise_all("mean")
+assult_rate <- t(assult_rate)
+assult_rate <- as.data.frame(assult_rate)
+assult_rate <- assult_rate %>% mutate(year=c(2014, 2015, 2016, 2017, 2018, 2019, 2020))
+
+auto_theft <- crime_rates_data %>% select(c(28:34)) %>% 
+  summarise_all("mean")
+auto_theft <- t(auto_theft)
+auto_theft <- as.data.frame(auto_theft)
+auto_theft <- auto_theft %>% mutate(year=c(2014, 2015, 2016, 2017, 2018, 2019, 2020))
+
+break_enter <- crime_rates_data %>% select(c(42:48)) %>% 
+  summarise_all("mean")
+break_enter <- t(break_enter)
+break_enter <- as.data.frame(break_enter)
+break_enter <- break_enter %>% mutate(year=c(2014, 2015, 2016, 2017, 2018, 2019, 2020))
+
+robbery <- crime_rates_data %>% select(c(56:62)) %>% 
+  summarise_all("mean")
+robbery <- t(robbery)
+robbery <- as.data.frame(robbery)
+robbery <- robbery %>% mutate(year=c(2014, 2015, 2016, 2017, 2018, 2019, 2020))
+
+theft_over <- crime_rates_data %>% select(c(70:76)) %>% 
+  summarise_all("mean")
+theft_over <- t(theft_over)
+theft_over <- as.data.frame(theft_over)
+theft_over <- theft_over %>% mutate(year=c(2014, 2015, 2016, 2017, 2018, 2019, 2020))
+
+homicide <- crime_rates_data %>% select(c(84:90)) %>% 
+  summarise_all("mean")
+homicide <- t(homicide)
+homicide <- as.data.frame(homicide)
+homicide <- homicide %>% mutate(year=c(2014, 2015, 2016, 2017, 2018, 2019, 2020))
+
+shooting <- crime_rates_data %>% select(c(98:104)) %>% 
+  summarise_all("mean")
+shooting <- t(shooting)
+shooting <- as.data.frame(shooting)
+shooting <- shooting %>% mutate(year=c(2014, 2015, 2016, 2017, 2018, 2019, 2020))
+```
+
+```{r crates, echo=FALSE, fig.cap="Toronto neighbourhood crime rates from 2014-2020"}
+a <- ggplot() + geom_line(data=assult_rate, aes(x=year, y = V1), color= "red") + theme_minimal() + ylab("assault rate")
+b <- ggplot() + geom_line(data=auto_theft, aes(x=year,y=V1), color = "blue")+ theme_minimal() + ylab("auto thef rate")
+c <- ggplot() + geom_line(data=break_enter, aes(x=year, y=V1), color = "green") + theme_minimal() + ylab("break and enter rate")
+d <- ggplot() + geom_line(data=robbery, aes(x=year,y=V1), color = "purple") + theme_minimal() + ylab("robbery rate")
+e <- ggplot() + geom_line(data=theft_over, aes(x=year,y=V1), color = "hotpink") + theme_minimal() + ylab("theft over rate")
+f <- ggplot() + geom_line(data=homicide, aes(x=year,y=V1), color = "orange") + theme_minimal() + ylab("homicide rate")
+g <- ggplot() + geom_line(data=shooting, aes(x=year,y=V1), color = "black") + theme_minimal() + ylab("shooting rate")
+
+ggarrange(a, b, c, d, e, f, g)
+```
+
+\newpage
+
+
+```{r hate, echo=FALSE, fig.cap="Toronto neighbourhood hate crimes in 2014-2020"}
+hate_crime_data <- hate_crime_data[c(1:7),]
+ggplot(hate_crime_data, aes(x=Year, y=Count_)) +
+  geom_line(aes(group=1))+
+  theme_minimal()+
+  ylab("Hate Crime count")
+```
+
+
+\newpage 
+
+```{r, include=FALSE}
+victimization_gss <- read.csv("C:/Users/Emily's Laptop/Desktop/sta304-final/Final-Crime-Violence-Victimization-Toronto-During-Pandemic/inputs/victimization_gss.csv")
+```
+
+
+
+```{r cpolice, echo=FALSE, fig.cap="2014 GSS Confidence in police"}
+ggplot(victimization_gss, aes(x=CIP_10))+
+  geom_bar()+
+  theme_minimal()+
+  xlab("Confidence in police")
+```
+
+```{r race, echo=FALSE, fig.cap="2014 GSS Discrimination of race/skin colour"}
+ggplot(victimization_gss, aes(x=DIS_20))+
+  geom_bar()+
+  theme_minimal()+
+  xlab("Discrimination-race/skin colour")
+```
+
+```{r dpolice, echo=FALSE, fig.cap="2014 GSS Exerinced discrimination by police"}
+ggplot(victimization_gss, aes(x=DTS_30))+
+  geom_bar()+
+  theme_minimal()+
+  xlab("Experienced discrimination-Police")
+```
+
+```{r incidents, echo=FALSE, fig.cap="2014 GSS Most serious crime incident"}
+victimization_gss_serious <- victimization_gss[victimization_gss$MSVIC != "Not asked-crime not reported", ]
+
+ggplot(victimization_gss_serious, aes(x=MSVIC))+
+  geom_bar()+
+  theme_minimal() + 
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
+  xlab("Most serious incident")
+```
+
+```{r victim, echo=FALSE, fig.cap="2014 GSS Victimizations"}
+ggplot(victimization_gss, aes(x=TOTVIC))+
+  geom_bar()+
+  theme_minimal()+
+  xlab("Victimizations")
+```
+
+
+```{r map, echo=FALSE, fig.cap="140 Toronto Neighbourhoods map", out.width="75%"}
+knitr::include_graphics("C:/Users/Emily's Laptop/Desktop/sta304-final/Final-Crime-Violence-Victimization-Toronto-During-Pandemic/inputs/Toronto-Neighbourhoods-Map.jpg")
+```
+
+\newpage 
+
+
+```{r, include=FALSE}
+crime_ind_assault <- crime_indicator_data %>% filter(occurren_6 == "Assault" & offence == 2020)
+
+crime_ind_break_enter <- crime_indicator_data %>% filter(occurren_6 == "Break and Enter" & offence == 2020)
+
+crime_ind_robbery <- crime_indicator_data %>% filter(occurren_6 == "Robbery" & offence == 2020)
+
+crime_ind_theft_over <- crime_indicator_data %>% filter(occurren_6 == "Theft Over" & offence == 2020)
+
+crime_ind_auto_theft <- crime_indicator_data %>% filter(occurren_6 == "Auto Theft" & offence == 2020)
+```
+
+```{r mapassault, echo=FALSE, fig.cap="Assaults in Toronto Neighbourhoods", out.width="75%"}
+my_sf1 <- st_as_sf(crime_ind_assault, coords = c('Neighbourh', 'Long')) 
+my_sf1 <- st_set_crs(my_sf1, value = 4326)
+
+aa <- ggplot(my_sf1, aes(color = occurren_6)) + 
+  geom_sf()+
+  theme_minimal()+
+  scale_color_manual(values="red")+
+  theme(legend.title = element_blank())
+aa
+```
+
+```{r bae, echo=FALSE, fig.cap="Break and enter in Toronto Neighbourhoods", out.width="75%"}
+my_sf2 <- st_as_sf(crime_ind_break_enter, coords = c('Neighbourh', 'Long')) 
+my_sf2 <- st_set_crs(my_sf2, value = 4326)
+
+bb <- ggplot(my_sf2, aes(color = occurren_6)) + 
+  geom_sf()+
+  theme_minimal()+
+  scale_color_manual(values="green")+
+  theme(legend.title = element_blank())
+bb
+```
+
+
+```{r robbery, echo=FALSE, fig.cap="Robberies in Toronto Neighbourhoods", out.width="75%"}
+my_sf3 <- st_as_sf(crime_ind_robbery, coords = c('Neighbourh', 'Long')) 
+my_sf3 <- st_set_crs(my_sf3, value = 4326)
+
+cc <- ggplot(my_sf3, aes(color = occurren_6)) + 
+  geom_sf()+
+  theme_minimal()+
+  scale_color_manual(values="purple")+
+  theme(legend.title = element_blank())
+cc
+```
+
+```{r theftover, echo=FALSE, fig.cap="Theft over in Toronto Neighbourhoods", out.width="75%"}
+my_sf4 <- st_as_sf(crime_ind_theft_over, coords = c('Neighbourh', 'Long')) 
+my_sf4 <- st_set_crs(my_sf4, value = 4326)
+
+dd <- ggplot(my_sf4, aes(color = occurren_6)) + 
+  geom_sf()+
+  theme_minimal()+
+  scale_color_manual(values="pink")+
+  theme(legend.title = element_blank())
+dd
+```
+
+```{r auto, echo=FALSE, fig.cap="Auto theft in Toronto Neighbourhoods", out.width="75%"}
+my_sf5 <- st_as_sf(crime_ind_auto_theft, coords = c('Neighbourh', 'Long')) 
+my_sf5 <- st_set_crs(my_sf5, value = 4326)
+
+ee <- ggplot(my_sf5, aes(color = occurren_6)) + 
+  geom_sf()+
+  theme_minimal()+
+  scale_color_manual(values="blue")+
+  theme(legend.title = element_blank())
+ee
+```
+
+
+\newpage 
+
+
+# Model
+
+Many considerations have been attributed to the fluctuations of crime rates in neighbourhood crime rates that are affected by many internal and external factors. Using the crime datasets, many aspects that can be attributed to affecting crime rates are not gathered and recorded.  Can use a regression model to explain the relationship between crime rates and neighbourhoods in Toronto in 2020. However, must keep in mind the data obtained on crime rates in neighbourhoods in Toronto is limiting in model and regression making as there are many more variables that effect the outcome of given rates in a community. Crime rates depend on its racial makeup of population/neighbourhood, its composition by age and gender as most crimes are committed by younger population, educational levels, family structures, poverty levels, and police policies are all key factors in assessing and comprehending the crime issue. But many of these factors are correlated with neighbourhood and areas in which people live in. 
+
+$$ Crime Rate = \beta_0 + \beta_1 \times neighbourhood +\epsilon_i$$
+where $Y_i$ is crime count outcomes of interest for specific crime rates,
+
+$\beta_0$ is the intercept parameter, 
+
+$\beta_1$ is the slope parameter and the expected change in Y, 
+
+$\epsilon_i$ is a standard error, describes the random component of linear relationship between crime rates and neighbourhoods. This does not affect the regression coefficients.
+
+The models for each type of crime done including assault, auto theft, break and enter, robbery, theft over, homicide and shootings determined the expected average change in the different crime rates in each Toronto neighbourhood in 2020. The model resulted in most assaults occurring in the Neighbourhood Moss Park (73) with an expected average increase of 2944 in assault crime rates. The model resulted in most auto thefts occurring in the Neighbourhood West Humber-Clairville (1) with an expected average increase of 888 in auto thefts crime rates. The model resulted in most breaking and entering occurring in the Neighbourhood Moss Park (73) with an expected average increase of 787 in break and enter crime rates. The model resulted in most robberies occurring in the Neighbourhood Moss Park (73) with an expected average increase of 490 in robbery crime rates. The model resulted in most theft over occurring in the Neighbourhood Humber Summit (21) with an expected average increase of 147 in theft over crime rates. The model resulted in most homicide occurring in the Neighbourhood Weston (113) with an expected average increase of 15 in homicide crime rates. The model resulted in most shootings occurring in the Neighbourhood Glenfield-Jane Heights (25) with an expected average increase of 96 in shooting crime rates. Can be seen from Figure \@ref(fig:mapassault) to Figure \@ref(fig:auto), which shows that the highest clusters of each crime given the neighbourhood related back to in Figure \@ref(fig:map), supporting this model. Using this linear regression can check the expected average increases in the different crime rates in different years. 
+
+
+```{r, include=FALSE}
+mod1 <- lm(Assault_Rate2020 ~ Neighbourhood, data=crime_rates_data)
+summary(mod1)
+```
+
+```{r, include=FALSE}
+mod2 <- lm(AutoTheft_Rate2020 ~ Neighbourhood, data=crime_rates_data)
+summary(mod2)
+```
+
+```{r, include=FALSE}
+mod3 <- lm(BreakAndEnter_Rate2020 ~ Neighbourhood, data=crime_rates_data)
+summary(mod3)
+```
+
+```{r, include=FALSE}
+mod4 <- lm(Robbery_Rate2020 ~ Neighbourhood, data=crime_rates_data)
+summary(mod4)
+```
+
+```{r, include=FALSE}
+mod5 <- lm(TheftOver_Rate2020 ~ Neighbourhood, data=crime_rates_data)
+summary(mod5)
+```
+
+```{r, include=FALSE}
+mod6 <- lm(Homicide_Rate2020 ~ Neighbourhood, data=crime_rates_data)
+summary(mod6)
+```
+
+```{r, include=FALSE}
+mod7 <- lm(Shootings_Rate2020 ~ Neighbourhood, data=crime_rates_data)
+summary(mod7)
+```
+
+# Results
+
+Crimes rates of assault, auto theft, break and enter, robbery, homicide and shooting as shown in Figure \@ref(fig:crates).  Crime rate is the number of crimes done per 100,000 people and is calculated by dividing the total number of reported crimes of any kind by the total population, then multiplying the result by 100,000. It is important to monitor crime rates monitors the severity level of police-reported crime in a city and nation to effectively prevent violence and dangerous environments in high crime geographic areas and concentrate policies, funding and proper allocation of police and resources to enhance the quality of life of all citizens. Notice that crime rates of assault, break and enter, theft over and homicide have an overall increasing trend from 2014 to 2019 but experience an extreme decrease in 2020. Assault crime rates are seen to be the highest throughout all years with a high of 660 in 2019 and the largest drastic decrease to approximately 560 in 2020. Break and enter and homicides also experienced a major drop of a rate of 280 to 220 and 2.8 to 2.2, respectively, from 2019 to 2020. This demonstrates that the COVID-19 pandemic and the necessary isolation and safety precautions taken in Toronto effected and decreased many crimes, as many people where home so less breaks and enters, assaults, robberies, which shows an overall major decreasing trend. On the other hand, auto thefts and shooting had a surprisingly large increase in rates from 2014 to 2020. Auto thefts increased from 120 to 180 while shootings increasing immensely from 6 to 13 with a high in 2019 of rate of 16. 
+
+Hate crimes is defined as a criminal offence committed against a person or property motivated in by hate, bias or prejudice against a distinguished group, usually a minority. An identifiable group is usually distinguished by race, ethnicity, religion, sex, age, disability, sexual or gender orientation. The count of hate crimes has fluctuated over 2014 to 2020 as illustrated in Figure \@ref(fig:hate), with large increases in 2017 with a count of 186 and the largest in 2020 with a count of 210. The COVID-19 pandemic is believed to have emerged in Wuhan, China in late December 2019 and began rapidly spreading around the world, which seemed to create an increase hatred and bias towards the Chinese-Asian population and thus hate crime toward this distinguishable group since the start of the COVID-19 pandemic. Figure \@ref(fig:mapassault) to Figure \@ref(fig:auto) illustrate that most assaults, break and enter, robberies occur in the Neighbourhood Moss Park (73) in 2020.  The model shows the most auto thefts occurring in the Neighbourhood West Humber-Clairville (1) and the model shows the most theft over occurring in the Neighbourhood Humber Summit (21). The location of neighbourhood can be seemed in Figure \@ref(fig:map). 
+
+The 2014 General Social Survey on Canadian Safety (Victimization) contains a standard core of question that describe demographic, behavioral, and attitudinal questions, plus topics of special interest on Assault, Crime, Discrimination, Injuries, Institution, Neighbours, Police and Safety. Figure \@ref(fig:cpolice) demonstrated that majority of the surveyed population has a great deal following some confidence in the police and justice system. Figure \@ref(fig:race) demonstrated that majority of the surveyed population has not experienced discrimination due to their race or colour of their skin. Figure \@ref(fig:dpolice) demonstrated that majority of the surveyed population answered valid skip when asked if they were discriminated against by the police, following the second highest answer of no. Figure \@ref(fig:incidents), when estimated those who skipped or did not answer, demonstrates that theft of household personal property followed by assault and vandalism were the most serious incidents they experienced. Figure \@ref(fig:victim) demonstrates that majority of the surveyed population has not been victimized in the past 12 months. These results would most likely be different if survey was done in 2020. 
+
+# Discussion
+
+## First Discussion point 
+
+Hate crimes as mentioned in Section \@ref(results) is defined as a criminal offence committed against a person or property motivated in by hate, bias, or prejudice against a distinguished group, usually a minority. An identifiable group is usually distinguished by race, ethnicity, religion, sex, age, disability, sexual or gender orientation. There have been many revolutions in the past decades to raise awareness and create more acceptance in discriminated against groups such as the LGBTQ+ community, however, there still continues and remains much prejudice and inequality when it come to race, ethnicity, religion, gender orientation and an overall increase in more hate. Racial bias has always been present when discussing crime as historically there has been continuous and recognized systematic racial bias when it comes to crime where minorities, particularly people of darker skin tone, are overrepresented and are nine times more likely to be stopped and searched by police than white people (@citeracialbias), with a recent and serious example of the occurrence of George Floyd and Black Lives Matter movement. However, due to the spread of COVID-19 pandemic, Asians and people of Asian descent have been major targets of violent and non-violent racial attacks and hate as people believe that believe that people of Chinese ethnicity or decent pose a realistic and symbolic threat to the nation, which is unacceptable. Even the United States former president Donald Trump claimed COVID-19 to be the Chinese virus. It is necessary for governments to strengthen and protect the vulnerable against societal bias and hate and create specific governmental response toward protecting Asians and people of Asian descent. They should produce anti racism strategies to prevent violence and discrimination linked to the pandemic while prosecuting racial attacks against Asians and any other target groups. Additionally, with the increase in not only hate crimes but shootings and thefts the government needs to implement more strict gun policies as the police can, obviously, play a huge role in reducing crime. By implementing policies and adopting evidence-based tactics like intelligently placing more police in specific neighbourhoods with higher crime rates can help reduce crime and overall violence and discrimination. 
+
+## Second discussion point 
+
+Hate crimes have become the new virus of corruption. Hate crimes target vulnerable populations being violent and non-violent tactics to show their hatred, bias, or prejudice against a distinguished group, usually a minority including people’s race, ethnicity, religion, sex, age, disability, sexual or gender orientation. The violent and non-violent acts of hate and discrimination can have major affects on the targeted populations psychological well-being as well as their physical well-being. People victimized by violent hate crimes are likely to experience more psychological distress than victims of other violent crimes and are more likely to experience post-traumatic stress, safety concerns, depression, anxiety, distress, low self-esteem, and anger than victims of crimes that are not motivated by bias (@citehatementalhealth). Hate crimes make victims believe that they are unwelcome and unsafe in their community and neighbourhood, feel unsupported and victimized, no longer feeling safe and secure. Asian individuals experiencing hate crime are less likely to access mental health services than any other racial group, partly because of the cultural bias against it but also due to a lack of culturally relevant approaches to treatment (@citechange). There need to be policies and support implemented for victims of such crimes to create opportunities to better the well-being and create safer environments for these individuals. Creative research, interventions, and policy efforts will help fight discrimination and improve the trauma and negative mental and physical impact victims are facing. Citizen’s part of Canadian communities also if witness such horrible acts against this targeted group need to speak up and stop Asian hate, but also speak up, report, and stop any discrimination and violence occurring in their community.  
+
+# Limitations 
+
+There are many limitations when it comes to collecting and analyzing crime rates in neighbourhoods especially when involving hate crimes. Many factors can influence the reported crime rates, including the willingness of the public to report crimes to the police, thus one of the limitations is the under reporting of crime and that the data collected may not reflect the real count and rates of hate crimes occurring in Toronto neighbourhoods. There has been continuous and recognized systematic racial bias when it comes to crime where minorities, particularly people of colour, are overrepresented and are nine times more likely to be stopped and searched by police than white people (@citeracialbias). Careful examination and taking in account for such inequalities must be insured to avoid further injustices and prejudices against people of colour. There is under representation and information bias occurring especially in the collection and definition of hate crimes as hate crimes are more difficult to charge and report because they require a proof of a specific motivation of bias. There is also a large weakness when it comes to hate crimes as those experiencing hate crimes are part of a minority where they feel silenced, are easily silenced and most times unheard, so would rather not waste time and not report if will be silence and not believed. Goal is to incentivize and encourage people to come forward and report the crimes done against them or crimes they have witness for maximum accuracy. 
+
+The General Social Survey displays many benefits in tracking the changes in behaviour and attitudes of societal and economical matters to aid in future management and policies. However, there are some weaknesses in the GSS. The sample collected of the survey is quite small compared to the population of Canada. A small survey sample in this case makes it difficult and inaccurate to provide assessing patterns, trends, and changes in specific geographic or racial sub-groups or individuals over time. It would only capture opinions that are representative of an entire population of these subgroup or geographic areas and would not create accurate representations of what is possible happening as it is only assessing few cohorts. The safety of citizens if not surveyed in both safe and unsafe neighbourhoods can skew the representation of the victimization and safety Canadian citizens experience. Next possible steps would be increasing the number of participants in different cohorts, including more proper stratification and geographic distribution. Moreover, the GSS includes questions that are mostly answered categorically, and respondents answer by ranking or choosing a specific choice of multiple choices. This may affect the accuracy of the true attitude and behaviour of citizens towards the many topics discussed. To obtain a general view of participants beliefs and opinions, adding more variables or allowing them to personally answer what they think to create more accurate trends on people’s opinions on health or public policies for example. However, this may be difficult for the GSS to achieve as there are many specific questions that would take ample amount of time to answer if no choices given plus would cause much more confusion and possible many more unanswered questions, which may de incentivize people to participate.
+
+
+# Appendix
+
+**Motivation**
+
+1. *For what purpose was the dataset created? Was there a specific task in mind? Was there a specific gap that needed to be filled? Please provide a description.*
+    - The dataset was created to enable analysis of crime rates in Toronto's neighbourhoods as well as a social survey to see the opinions of peoples safety in Canada. 
+2. *Who created the dataset (for example, which team, research group) and on behalf of which entity (for example, company, institution, organization)?*
+    - Open Data Toronto
+    - Statistics Canada
+3. *Who funded the creation of the dataset? If there is an associated grant, please provide the name of the grantor and the grant name and number.*
+    - city of Toronto government
+    - Sociology Program
+
+**Composition**
+
+1. *What do the instances that comprise the dataset represent (for example, documents, photos, people, countries)? Are there multiple types of instances (for example, movies, users, and ratings; people and interactions between them; nodes and edges)? Please provide a description.*
+	- Composed of occurrances of different crimes in Toronto
+	- Surveyed Canadian citizens 
+2. *How many instances are there in total (of each type, if appropriate)?*
+	- Crime rates has 140 observations
+	- Crime indicators have 2424879 observations
+	- GSS has 33,127 observations
+3. *What data does each instance consist of? "Raw" data (for example, unprocessed text or images) or features? In either case, please provide a description.*
+	- Crime rates, indicators and hate crime datasets were cleaned 
+	- GSS was raw and cleaned
+4. *Is any information missing from individual instances? If so, please provide a description, explaining why this information is missing (for example, because it was unavailable). This does not include intentionally removed information, but might include, for example, redacted text.*
+  - No
+5. *Are there any errors, sources of noise, or redundancies in the dataset? If so, please provide a description.*
+	- No
+6. *Does the dataset contain data that might be considered confidential (for example, data that is protected by legal privilege or by doctor-patient confidentiality, data that includes the content of individuals' non-public communications)? If so, please provide a description.*
+	- Yes, the GSS contains income and other personal information taht may be confidential
+7. *Does the dataset contain data that, if viewed directly, might be offensive, insulting, threatening, or might otherwise cause anxiety? If so, please describe why.*
+	- No
+8. *Does the dataset identify any sub-populations (for example, by age, gender)? If so, please describe how these subpopulations are identified and provide a description of their respective distributions within the dataset.*
+	- Yes, the GSS includes ages, genders, incomes, race, etc. 
+9. *Is it possible to identify individuals (that is, one or more natural persons), either directly or indirectly (that is, in combination with other data) from the dataset? If so, please describe how.*
+	- No
+10. *Does the dataset contain data that might be considered sensitive in any way (for example, data that reveals race or ethnic origins, sexual orientations, religious beliefs, political opinions or union memberships, or locations; financial or health data; biometric or genetic data; forms of government identification, such as social security numbers; criminal history)? If so, please provide a description.*
+	- Possibly, as hate crimes affect minoritoes and the statistics may trigger those targeted
+
+**Collection process**
+
+1. *How was the data associated with each instance acquired? Was the data directly observable (for example, raw text, movie ratings), reported by subjects (for example, survey responses), or indirectly inferred/derived from other data (for example, part-of-speech tags, model-based guesses for age or language)? If the data was reported by subjects or indirectly inferred/derived from other data, was the data validated/verified? If so, please describe how.*
+	- Open data Toronto datasets are observable 
+2. *What mechanisms or procedures were used to collect the data (for example, hardware apparatuses or sensors, manual human curation, software programs, software APIs)? How were these mechanisms or procedures validated?*
+	- GSS survey was done in person or over the phone
+	- open data collects occurence of crime
+3. *Who was involved in the data collection process (for example, students, crowdworkers, contractors) and how were they compensated (for example, how much were crowdworkers paid)?*
+	- Toronto citizens that experienced crime
+	- Voluntary surveyed Canadian citizens
+4. *Were any ethical review processes conducted (for example, by an institutional review board)? If so, please provide a description of these review processes, including the outcomes, as well as a link or other access point to any supporting documentation.*
+	- Yes
+5. *Did you collect the data from the individuals in question directly, or obtain it via third parties or other sources (for example, websites)?*
+	- Obtain crime rates, indictaors and hate crime counts from the Open Data Toronto Portal website
+	- Obtained GSS from odesi
+6. *Were the individuals in question notified about the data collection? If so, please describe (or show with screenshots or other information) how notice was provided, and provide a link or other access point to, or otherwise reproduce, the exact language of the notification itself.*
+	- GSS was consentually taken and ony surveyd people who wanted to take survey
+
+**Preprocessing/cleaning/labeling**
+
+1. *Was any preprocessing/cleaning/labeling of the data done (for example, discretization or bucketing, tokenization, part-of-speech tagging, SIFT feature extraction, removal of instances, processing of missing values)? If so, please provide a description. If not, you may skip the remaining questions in this section.*
+	- Changed some of the labelling in the GSS survey using R studio packages 
+2. *Was the "raw" data saved in addition to the preprocessed/cleaned/labeled data (for example, to support unanticipated future uses)? If so, please provide a link or other access point to the "raw" data.*
+	- The microdata of the 2014 GSS Victimization was saved from odesi, which is not available to all public. I was able to get access as a University of Toronto student. 
+3. *Is the software that was used to preprocess/clean/label the data available? If so, please provide a link or other access point.*
+	- Software R and R Studio, with packages readr, tidyr, dplyr and tidyverse. 
+
+
+**Distribution**
+
+1. *Will the dataset be distributed to third parties outside of the entity (for example, company, institution, organization) on behalf of which the dataset was created? If so, please provide a description.*
+	- Open Data Toronto data is distributed and released to the public
+	- GSS data is private but analysis is found on Statistics Canada
+2. *How will the dataset be distributed (for example, tarball on website, API, GitHub)? Does the dataset have a digital object identifier (DOI)?*
+	- Open Data Toronto data is distributed and released to the public
+	- GSS data is private but analysis is released on Statistics Canada
+
+**Maintenance**
+
+1. *Who will be supporting/hosting/maintaining the dataset?*
+	- Open Data Toronto
+	- Statistics Canada
+2. *How can the owner/curator/manager of the dataset be contacted (for example, email address)?*
+	- opendata@toronto.ca
+	- nfostats@statcan.gc.ca
+	- emily.panus@mail.utoronto.ca
+3. *Will the dataset be updated (for example, to correct labeling errors, add new instances, delete instances)? If so, please describe how often, by whom, and how updates will be communicated to dataset consumers (for example, mailing list, GitHub)?*
+	- No
+4. *If the dataset relates to people, are there applicable limits on the retention of the data associated with the instances (for example, were the individuals in question told that their data would be retained for a fixed period of time and then deleted)? If so, please describe these limits and explain how they will be enforced.*
+	- No
+5. *If others want to extend/augment/build on/contribute to the dataset, is there a mechanism for them to do so? If so, please provide a description. Will these contributions be validated/verified? If so, please describe how. If not, why not? Is there a process for communicating/distributing these contributions to dataset consumers? If so, please provide a description.*
+	- No, the data is collected by the government and thus cannot contribute to the datasets consumers.
+
+
+\newpage
+
+# References 
+
