@@ -1,7 +1,7 @@
 # READ ME!
 •	Author: Emily Panus
 
-•	Date: April 6, 2022
+•	Date: April 27, 2022
 
 •	email: emily.panus@mail.utoronto.ca
 
@@ -27,7 +27,7 @@ There are the things that I created with the inputs. This includes in the data f
 
 3.	Scripts
 	
-Contains the R-Script with code that was used to clean the raw data. To obtain data from Open Data Toronto Portal, visit https://open.toronto.ca/ , search for “Neighbourhood Crime Rates” and download data or download data from link https://open.toronto.ca/dataset/neighbourhood-crime-rates/. I obtained the 2014 General Social Survey - Canadians' Safety (Victimization) microdata on data portal odesi, which is not directly obtainable for public use but can visit https://www150.statcan.gc.ca/n1/en/catalogue/12M0026X for public use of microdata file (PUMF – provincial) for the 2014 General Social Survey (GSS) on Canadians’ Safety (Victimization). 
+Contains the R-Script with code that was used to clean the raw data. To obtain data from Open Data Toronto Portal, visit https://open.toronto.ca/ , search for “Neighbourhood Crime Rates” and download data or download data from link https://open.toronto.ca/dataset/neighbourhood-crime-rates/. To obtain data "Major Crime Indicators", download data from link https://open.toronto.ca/dataset/major-crime-indicators/. To obtain data on Hate Crimes use datset "Police Annual Statistical Report - Miscellaneous Data", download data from link https://open.toronto.ca/dataset/police-annual-statistical-report-miscellaneous-data/. I obtained the 2014 General Social Survey - Canadians' Safety (Victimization) microdata on data portal odesi, which is not directly obtainable for public use but can visit https://www150.statcan.gc.ca/n1/en/catalogue/12M0026X for public use of microdata file (PUMF – provincial) for the 2014 General Social Survey (GSS) on Canadians’ Safety (Victimization). 
 
 4.	License for re usability.
 
